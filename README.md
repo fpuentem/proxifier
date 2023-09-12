@@ -1,16 +1,19 @@
 # Proxifier
+
 A fast, modern and intelligent proxy rotator perfect for crawling and scraping public data. Proxifier act as a proxy and remotely send and receive requests and responses from other proxies.
 
-# Getting Started
+## Getting Started
+
 Firstly, just download and install proxifier.
 
-```
-go get github.com/rookmoot/proxifier
+```go
+get github.com/rookmoot/proxifier
 ```
 
-# Example
+## Example
 
 First create a file that will contain the list of proxies. You NEED to change the `ipAddress` to a real proxy IP address. Likewise update `port` to the actual PORT. Otherwise your application will fail while trying to contact the proxy.
+
 ```json
 [
     {
@@ -132,18 +135,20 @@ func main() {
 
 ```
 
-# Try it !
+## Try it!
 
 To test it, just run for example :
-```
+
+```bash
 curl -vx http://127.0.0.1:8080 http://httpbin.org/ip
 ```
 
 If you want to try some HTTPS server, you may need to add a `X-Proxifier-Https` header in order to change your http:// url to https. For example if you want to test : `https://httpbin.org/ip`
 
-```
+```bash
 curl -vx http://127.0.0.1:8080 -H "X-Proxifier-Https: On" http://httpbin.org/ip
 ```
 
-# Still in Beta
+## Still in Beta
+
 This project has just started, feel free to provide any feedback or pull requests.

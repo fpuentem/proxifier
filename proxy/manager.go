@@ -15,6 +15,7 @@ import (
 	"github.com/rookmoot/proxifier/logger"
 )
 
+// RedisInterface defines the interface for interacting with Redis.
 type RedisInterface interface {
 	SMembers(key string) *redis.StringSliceCmd
 	SAdd(key string, members ...interface{}) *redis.IntCmd
@@ -25,12 +26,14 @@ type RedisInterface interface {
 	Incr(key string) *redis.IntCmd
 }
 
+// Manager manages proxies and provides proxy rotation functionality.
 type Manager struct {
 	db      RedisInterface
 	log     logger.Logger
 	proxies []*Proxy
 }
 
+// NewManager creates a new Manager instance.
 func NewManager(db RedisInterface, log logger.Logger) (*Manager, error) {
 	m := Manager{
 		db:  db,
@@ -45,13 +48,12 @@ func NewManager(db RedisInterface, log logger.Logger) (*Manager, error) {
 	return &m, nil
 }
 
+// UpdateProxies updates the list of proxies from a JSON file.
 func (m *Manager) UpdateProxies(filepath string) error {
 	proxies, err := m.readProxiesFromFile(filepath)
 	if err != nil {
 		return err
 	}
-
-	m.log.Info("%v", proxies[0])
 
 	for _, proxy := range proxies {
 		if proxy.GetAnonymityLevel() == "elite" && (proxy.GetProtocol() == "http" || proxy.GetProtocol() == "https") {
@@ -73,12 +75,14 @@ func (m *Manager) UpdateProxies(filepath string) error {
 	return nil
 }
 
+// GetProxy returns a random proxy from the list.
 func (m *Manager) GetProxy() (*Proxy, error) {
 	rand.Seed(time.Now().Unix())
 	r := rand.Intn(len(m.proxies))
 	return m.proxies[r], nil
 }
 
+// loadProxyList loads proxies from Redis and populates the Manager's proxy list.
 func (m *Manager) loadProxyList() error {
 	ret, err := m.db.SMembers("proxies").Result()
 	if err != nil {
@@ -98,6 +102,7 @@ func (m *Manager) loadProxyList() error {
 	return nil
 }
 
+// loadProxy loads a single proxy from Redis based on its ID.
 func (m *Manager) loadProxy(pid int) (*Proxy, error) {
 	data, err := m.db.HMGet(fmt.Sprintf("proxy:%d", pid), "ipaddress", "port", "protocol", "anonymitylevel", "source", "country").Result()
 	if err != nil {
@@ -125,11 +130,8 @@ func (m *Manager) loadProxy(pid int) (*Proxy, error) {
 	return &p, nil
 }
 
+// proxySave saves a proxy to Redis.
 func (m *Manager) proxySave(p Proxy) error {
-	// INCR proxies_next_id
-	// HMSET proxy:[ID] username [USERNAME] password [MD5HASH]
-	// SADD proxies [ID]
-
 	next_id, err := m.db.Incr("proxies_next_id").Result()
 	if err != nil {
 		return err
@@ -152,6 +154,7 @@ func (m *Manager) proxySave(p Proxy) error {
 	return nil
 }
 
+// proxyExists checks if a proxy exists in Redis.
 func (m *Manager) proxyExists(p Proxy) bool {
 	_, err := m.db.HGet("proxies_ids", p.GetAddress()).Result()
 	if err != nil {
@@ -160,6 +163,7 @@ func (m *Manager) proxyExists(p Proxy) bool {
 	return true
 }
 
+// readProxiesFromFile reads proxy configurations from a JSON file.
 func (m *Manager) readProxiesFromFile(filepath string) ([]Proxy, error) {
 	file, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -175,7 +179,6 @@ func (m *Manager) readProxiesFromFile(filepath string) ([]Proxy, error) {
 	}
 
 	for _, data := range values {
-
 		infos := make(map[string]string, 6)
 		for k, v := range data {
 			if k == "protocols" {

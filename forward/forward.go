@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -375,7 +375,7 @@ func (fwd *Forward) createErrorResponse(code int, reason []byte) {
 		ProtoMajor:    1,
 		ProtoMinor:    1,
 		Request:       fwd.request,
-		Body:          ioutil.NopCloser(bytes.NewBuffer(reason)),
+		Body:          io.NopCloser(bytes.NewBuffer(reason)),
 		ContentLength: int64(len(reason)),
 	}
 

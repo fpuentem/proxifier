@@ -3,9 +3,9 @@ package proxy
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -77,9 +77,10 @@ func (m *Manager) UpdateProxies(filepath string) error {
 
 // GetProxy returns a random proxy from the list.
 func (m *Manager) GetProxy() (*Proxy, error) {
-	rand.Seed(time.Now().Unix())
-	r := rand.Intn(len(m.proxies))
-	return m.proxies[r], nil
+	// rand.Seed(time.Now().Unix())
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	vr := r.Intn(len(m.proxies))
+	return m.proxies[vr], nil
 }
 
 // loadProxyList loads proxies from Redis and populates the Manager's proxy list.
@@ -165,7 +166,7 @@ func (m *Manager) proxyExists(p Proxy) bool {
 
 // readProxiesFromFile reads proxy configurations from a JSON file.
 func (m *Manager) readProxiesFromFile(filepath string) ([]Proxy, error) {
-	file, err := ioutil.ReadFile(filepath)
+	file, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}

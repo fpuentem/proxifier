@@ -47,14 +47,12 @@ func main() {
 	log.Verbose = true
 	log.Color = true
 
-	r := redis.NewClient(
-		&redis.Options{
-			Network:  "unix",
-			Addr:     "/var/run/redis/redis.sock",
-			Password: "",
-			DB:       0,
-		},
-	)
+	r := redis.NewClient(&redis.Options{
+		Network:  "tcp",
+		Addr:     "127.0.0.1:6379", //"172.20.0.2:6379", // Replace with the actual IP address and port of your Redis server
+		Password: "",
+		DB:       0,
+	})
 
 	proxyManager, err := proxy.NewManager(r, log)
 
